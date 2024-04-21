@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>GToken</h1>
+  <ul>
+    <li><a href="/">top</a></li>
+  </ul>
+  <table border="1">
+    <tr>
+      <th>key</th>
+      <th>value</th>
+    </tr>
+    {% for key, value in idinfo.items() %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ value }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
