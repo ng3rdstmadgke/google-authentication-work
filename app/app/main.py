@@ -25,6 +25,15 @@ async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
+        context={}
+    )
+
+
+@app.get("/callback_mode", response_class=HTMLResponse)
+async def callback_mode(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="callback_mode.html",
         context={
             "client_id": env.client_id,
         }
@@ -34,7 +43,7 @@ class SigninRequest(BaseModel):
     credential: str
     nonce: str
 
-@app.post("/api/verify")
+@app.post("/callback_mode/verify")
 def api_verify(
     data: SigninRequest,
 ):

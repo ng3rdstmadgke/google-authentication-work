@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div style="padding: 50px;">
+    <div style="margin-bottom: 50px">
+      <div id="g_id_onload"
+        data-client_id="{{ client_id }}"
+        data-context="signin"
+        data-ux_mode="popup"
+        data-callback="handleCredentialResponse"
+        data-auto_prompt="false">
+      </div>
+
+      <div class="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-theme="outline"
+        data-text="signin_with"
+        data-size="large"
+        data-logo_alignment="left">
+      </div>
+    </div>
+
+    <div style="margin-bottom: 50px;">
+      <button onclick="revokeIdToken()">Clear</button>
+    </div>
+
+    <div id="result">
+      <div>
+        <textarea readonly cols="100" rows=10 id="id_token"></textarea>
+      </div>
+      <div>
+        <table id="payload" border="1">
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <script>
+    const STATE = "abcdefghij1234567890"
+    const NONCE = "0987654321zyxwvutsrqponml"
+
+    document.querySelector('.g_id_signin').setAttribute('data-state', STATE)
+    document.querySelector('#g_id_onload').setAttribute('data-nonce', NONCE)
+
+    async function handleCredentialResponse(response) {
+      if (response.state !== STATE) {
+        alert('state not match');
+        throw new Error('state not match');
+      }
+      let res = await fetch("/callback_mode/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential: response.credential,
+          nonce: NONCE,
+        })
+      })
+      let data = await res.json()
+
+      if (!res.ok) {
+        alert(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
+        throw new Error(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
+      }
+      localStorage.setItem("id_token", response.credential)
+      localStorage.setItem("idinfo", JSON.stringify(data))
+      displayIdToken()
+    }
+
+    function revokeIdToken() {
+      let idinfo = JSON.parse(localStorage.getItem("idinfo"))
+      if (idinfo) {
+        google.accounts.id.revoke(idinfo.sub, done => {
+          localStorage.clear();
+          location.reload();
+        });
+      }
+    }
+
+    function displayIdToken() {
+      let id_token = localStorage.getItem("id_token")
+      if (id_token) {
+        document.getElementById("id_token").textContent = id_token
+      }
+
+      let idinfo = JSON.parse(localStorage.getItem("idinfo"))
+      if (idinfo) {
+        let table = document.getElementById("payload")
+        Object.entries(idinfo).forEach(([k, v]) => {
+          table.insertAdjacentHTML("beforeend", `<tr><td>${k}</td><td>${v}</td></tr>`)
+        })
+      }
+    }
+
+    displayIdToken()
+  </script>
+</body>
+</html>
