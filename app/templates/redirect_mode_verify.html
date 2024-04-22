@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirect Mode Verify</title>
+</head>
+<body>
+<script>
+let id_token = '{{ id_token }}'
+let idinfo = '{{ idinfo|safe }}'
+localStorage.setItem("id_token", id_token)
+localStorage.setItem("idinfo", idinfo)
+location.href = "http://localhost:8000/redirect_mode"
+</script>
+</body>
+</html>

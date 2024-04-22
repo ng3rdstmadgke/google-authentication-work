@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Callback Mode</title>
+  <title>Redirect Mode</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -14,7 +14,8 @@
         data-client_id="{{ client_id }}"
         data-context="signin"
         data-ux_mode="popup"
-        data-callback="handleCredentialResponse"
+        data-login_uri="http://localhost:8000/redirect_mode_verify"
+        data-nonce=""
         data-auto_prompt="false">
       </div>
 
@@ -47,39 +48,9 @@
         </table>
       </div>
     </div>
-
   </div>
+
 <script>
-const STATE = "abcdefghij1234567890"
-const NONCE = "0987654321zyxwvutsrqponml"
-
-document.querySelector('.g_id_signin').setAttribute('data-state', STATE)
-document.querySelector('#g_id_onload').setAttribute('data-nonce', NONCE)
-
-async function handleCredentialResponse(response) {
-  if (response.state !== STATE) {
-    alert('state not match');
-    throw new Error('state not match');
-  }
-  let res = await fetch("/callback_mode_verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      credential: response.credential,
-      nonce: NONCE,
-    })
-  })
-  let data = await res.json()
-
-  if (!res.ok) {
-    alert(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
-    throw new Error(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
-  }
-  localStorage.setItem("id_token", response.credential)
-  localStorage.setItem("idinfo", JSON.stringify(data))
-  displayIdToken()
-}
-
 function revokeIdToken() {
   let idinfo = JSON.parse(localStorage.getItem("idinfo"))
   if (idinfo) {
