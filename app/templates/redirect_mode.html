@@ -50,6 +50,9 @@
   </div>
 
 <script>
+/**
+ * トークンを削除する
+ */
 function revokeIdToken() {
   let idinfo = JSON.parse(localStorage.getItem("idinfo"))
   if (idinfo) {
@@ -60,6 +63,9 @@ function revokeIdToken() {
   }
 }
 
+/**
+  * トークンを表示する
+  */
 function displayIdToken() {
   let id_token = localStorage.getItem("id_token")
   if (id_token) {

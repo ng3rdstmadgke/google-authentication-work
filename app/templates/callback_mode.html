@@ -56,6 +56,9 @@ const NONCE = "0987654321zyxwvutsrqponml"
 document.querySelector('.g_id_signin').setAttribute('data-state', STATE)
 document.querySelector('#g_id_onload').setAttribute('data-nonce', NONCE)
 
+/**
+ * Googleでログインのコールバック関数
+ */
 async function handleCredentialResponse(response) {
   if (response.state !== STATE) {
     alert('state not match');
@@ -80,6 +83,9 @@ async function handleCredentialResponse(response) {
   displayIdToken()
 }
 
+/**
+ * トークンを削除する
+ */
 function revokeIdToken() {
   let idinfo = JSON.parse(localStorage.getItem("idinfo"))
   if (idinfo) {
@@ -90,6 +96,9 @@ function revokeIdToken() {
   }
 }
 
+/**
+  * トークンを表示する
+  */
 function displayIdToken() {
   let id_token = localStorage.getItem("id_token")
   if (id_token) {
