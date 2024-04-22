@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Cookie, Request, HTTPException, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
@@ -13,7 +13,6 @@ def random_string() -> str:
 
 class Environment(BaseSettings):
     client_id: str = "578516381021-94ulrphd2s5ch0d6i9h12c8f5p31cb7m.apps.googleusercontent.com"
-    redirect_uri: str = "http://localhost:8000/gtoken"
 
 env = Environment()
 
@@ -27,40 +26,21 @@ async def index(request: Request):
         request=request,
         name="index.html",
         context={
-        }
-    )
-
-@app.get("/login", response_class=HTMLResponse)
-def login(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="login.html",
-        context={
             "client_id": env.client_id,
-            "redirect_uri": env.redirect_uri,
         }
     )
 
+class SigninRequest(BaseModel):
+    credential: str
+    nonce: str
 
-@app.post("/gtoken", response_class=HTMLResponse)
-def gtoken(
-    request: Request,
-    g_csrf_token: str = Form(),
-    credential: str = Form(),
+@app.post("/api/verify")
+def api_verify(
+    data: SigninRequest,
 ):
-    g_csrf_token_cookie = request.cookies.get("g_csrf_token")
-    if g_csrf_token_cookie != g_csrf_token:
-        raise HTTPException(status_code=404, detail="Failed to verify double submit cookie.")
-    idinfo = id_token.verify_oauth2_token(credential, requests.Request(), env.client_id)
+    idinfo = id_token.verify_oauth2_token(data.credential, requests.Request(), env.client_id)
     if idinfo['aud'] not in [env.client_id]:
-        raise HTTPException(status_code=404, detail="Could not verify audience.")
-    return templates.TemplateResponse(
-        request=request,
-        name="gtoken.html",
-        context={
-            "idinfo": idinfo,
-        }
-    )
-
-import hashlib
-import os
+        raise HTTPException(status_code=400, detail="Could not verify audience.")
+    if idinfo['nonce'] != data.nonce:
+        raise HTTPException(status_code=400, detail="nonce not match.")
+    return idinfo
