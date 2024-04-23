@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OIDC Mode</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <!--
+    参考
+    - https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja
+  -->
+
+  <div style="padding: 50px;">
+    <!-- 戻る -->
+    <div style="margin-bottom: 20px">
+      <a href="/">top</a>
+    </div>
+
+    <!-- Googleボタン -->
+    <div style="margin-bottom: 50px">
+      <button id="login_btn" >
+        Googleでログイン
+      </button>
+    </div>
+  </div>
+
+<script>
+
+document.getElementById("login_btn").addEventListener("click", function() {
+  let state = "abcdefghij1234567890"
+  let nonce = "0987654321zyxwvutsrqponml"
+  localStorage.setItem("state", state)
+  localStorage.setItem("nonce", nonce)
+
+// 認証URIパラメータ
+// https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#authenticationuriparameters
+  let url = "https://accounts.google.com/o/oauth2/v2/auth"
+  let query = {
+    "response_type": "code",
+    "client_id": "{{ client_id }}",
+    "scope": "openid email profile",
+    "redirect_uri": "http://localhost:8000/oidc_mode_code",
+    "state": state,
+    "nonce": nonce,
+  }
+  let query_str = Object.entries(query).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&")
+  console.log("url: ", `${url}?${query_str}`)
+  location.href = `${url}?${query_str}`
+})
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import os
 import hashlib
 import json
+from typing import Optional
 from fastapi import FastAPI, Cookie, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -13,7 +14,7 @@ def random_string() -> str:
     return hashlib.sha256(os.urandom(1024)).hexdigest()
 
 class Environment(BaseSettings):
-    client_id: str = "578516381021-94ulrphd2s5ch0d6i9h12c8f5p31cb7m.apps.googleusercontent.com"
+    client_id: str = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
 
 env = Environment()
 
@@ -94,3 +95,75 @@ def callback_mode_verify(
     if idinfo['nonce'] != data.nonce:
         raise HTTPException(status_code=400, detail="nonce not match.")
     return idinfo
+
+
+#
+# OIDC
+#
+@app.get("/oidc_mode", response_class=HTMLResponse)
+def oidc_mode(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="oidc_mode.html",
+        context={
+            "client_id": env.client_id,
+        }
+    )
+
+@app.get("/oidc_mode_code", response_class=HTMLResponse)
+def oidc_mode_code(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="oidc_mode_code.html",
+        context={
+            "client_id": env.client_id,
+        }
+    )
+
+import requests as tmp_requests
+
+class OidcModeTokenRequest(BaseModel):
+    code: str
+    nonce: str
+
+class GoogleOidcTokenResponse(BaseModel):
+    access_token: str
+    expires_in: int
+    id_token: str
+    scope: str
+    token_type: str
+    refresh_token: Optional[str] = None  # 認証リクエストで access_type パラメータが offline に設定されている場合にのみ
+
+@app.post("/oidc_mode_token")
+def oidc_mode_token(
+    data: OidcModeTokenRequest,
+):
+    # 4. code をアクセス トークンと ID トークンと交換する
+    # https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#exchangecode
+    url = "https://oauth2.googleapis.com/token"
+    res = tmp_requests.post(
+        url=url,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        params={
+            "code": data.code,
+            "client_id": env.client_id,
+            "client_secret": "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",
+            "redirect_uri": "http://localhost:8000/oidc_mode_code",
+            "grant_type": "authorization_code",
+        }
+    )
+    if res.status_code != 200:
+        raise HTTPException(status_code=400, detail=res.text)
+
+    res_data = GoogleOidcTokenResponse.model_validate(res.json())
+    print(res_data)
+    idinfo = id_token.verify_oauth2_token(res_data.id_token, requests.Request(), env.client_id)
+    print(idinfo)
+    if idinfo['nonce'] != data.nonce:
+        raise HTTPException(status_code=400, detail="nonce not match.")
+    return {
+        "idinfo": idinfo,
+        "res_data": res_data,
+    }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OIDC Mode - Code</title>
+</head>
+<body>
+  <div style="padding: 50px;">
+    <!-- 戻る -->
+    <div style="margin-bottom: 20px">
+      <a href="/">top</a>
+    </div>
+  </div>
+<script>
+document.addEventListener("DOMContentLoaded", async function() {
+  let state = localStorage.getItem("state")
+  let nonce = localStorage.getItem("nonce")
+  console.log("state:", state, "nonce:", nonce)
+
+  let query = [...new URLSearchParams(location.search).entries()].reduce((acc, [k, v]) => { acc[k] = v; return acc; }, {})
+  console.log("query: ", query)
+
+  if (query.state !== state) {
+    alert('state not match');
+    throw new Error('state not match');
+  }
+  let res = await fetch("/oidc_mode_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      "code": query.code,
+      "nonce": nonce,
+    })
+  })
+
+  let data = await res.json()
+
+  if (!res.ok) {
+    alert(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
+    throw new Error(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
+  }
+
+  console.log("token response: ", data)
+})
+</script>
+</body>
+</html>
