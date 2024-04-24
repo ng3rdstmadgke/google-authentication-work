@@ -32,9 +32,9 @@ async def index(request: Request):
         context={}
     )
 
-#
+#############################################
 # リダイレクト
-#
+#############################################
 @app.get("/redirect_mode/", response_class=HTMLResponse)
 async def redirect_mode(request: Request):
     return templates.TemplateResponse(
@@ -78,9 +78,9 @@ def redirect_mode_verify(
         }
     )
 
-#
+#############################################
 # コールバック
-#
+#############################################
 @app.get("/callback_mode/", response_class=HTMLResponse)
 async def callback_mode(request: Request):
     return templates.TemplateResponse(
@@ -107,9 +107,9 @@ def callback_mode_verify(
     return idinfo
 
 
-#
+#############################################
 # OIDC
-#
+#############################################
 @app.get("/oidc_mode/", response_class=HTMLResponse)
 def oidc_mode(request: Request):
     return templates.TemplateResponse(
