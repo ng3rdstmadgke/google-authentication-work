@@ -24,7 +24,36 @@
         Googleでログイン
       </button>
     </div>
+
+    <!-- トークン表示領域 -->
+    <div id="result">
+      <div style="margin-bottom: 1rem;">
+        <table id="token_response" border="1">
+          <caption>トークンエンドポイントのレスポンス</caption>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <table id="idinfo" border="1">
+          <caption>IDトークンのペイロード</caption>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+        </table>
+      </div>
+    </div>
   </div>
+<style>
+
+table td {
+  word-break:break-all
+}
+</style>
 
 <script>
 
@@ -34,8 +63,8 @@ document.getElementById("login_btn").addEventListener("click", function() {
   localStorage.setItem("state", state)
   localStorage.setItem("nonce", nonce)
 
-// 認証URIパラメータ
-// https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#authenticationuriparameters
+  // 認証URIパラメータ
+  // https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#authenticationuriparameters
   let url = "https://accounts.google.com/o/oauth2/v2/auth"
   let query = {
     "response_type": "code",
@@ -49,6 +78,24 @@ document.getElementById("login_btn").addEventListener("click", function() {
   console.log("url: ", `${url}?${query_str}`)
   location.href = `${url}?${query_str}`
 })
+
+
+/**
+ * トークンを表示する
+ */
+function displayIdToken() {
+  for (let key of ["token_response", "idinfo"]) {
+    let data = JSON.parse(localStorage.getItem(key))
+    if (data) {
+      let table = document.getElementById(key)
+      Object.entries(data).forEach(([k, v]) => {
+        table.insertAdjacentHTML("beforeend", `<tr><td>${k}</td><td width="600">${v}</td></tr>`)
+      })
+    }
+  }
+}
+
+displayIdToken()
 </script>
 </body>
 </html>

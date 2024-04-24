@@ -18,13 +18,17 @@ document.addEventListener("DOMContentLoaded", async function() {
   let nonce = localStorage.getItem("nonce")
   console.log("state:", state, "nonce:", nonce)
 
+  // GETパラメータをパース
   let query = [...new URLSearchParams(location.search).entries()].reduce((acc, [k, v]) => { acc[k] = v; return acc; }, {})
   console.log("query: ", query)
 
+  // stateの検証
   if (query.state !== state) {
     alert('state not match');
     throw new Error('state not match');
   }
+
+  // トークンの取得
   let res = await fetch("/oidc_mode_token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -33,15 +37,17 @@ document.addEventListener("DOMContentLoaded", async function() {
       "nonce": nonce,
     })
   })
-
   let data = await res.json()
-
   if (!res.ok) {
     alert(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
     throw new Error(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
   }
 
-  console.log("token response: ", data)
+  // トークンを保存
+  localStorage.setItem("idinfo", JSON.stringify(data.idinfo))
+  localStorage.setItem("token_response", JSON.stringify(data.token_response))
+
+  location.href = "/oidc_mode"
 })
 </script>
 </body>

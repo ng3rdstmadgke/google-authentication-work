@@ -157,13 +157,11 @@ def oidc_mode_token(
     if res.status_code != 200:
         raise HTTPException(status_code=400, detail=res.text)
 
-    res_data = GoogleOidcTokenResponse.model_validate(res.json())
-    print(res_data)
-    idinfo = id_token.verify_oauth2_token(res_data.id_token, requests.Request(), env.client_id)
-    print(idinfo)
+    token_response = GoogleOidcTokenResponse.model_validate(res.json())
+    idinfo = id_token.verify_oauth2_token(token_response.id_token, requests.Request(), env.client_id)
     if idinfo['nonce'] != data.nonce:
         raise HTTPException(status_code=400, detail="nonce not match.")
     return {
+        "token_response": token_response,
         "idinfo": idinfo,
-        "res_data": res_data,
     }
