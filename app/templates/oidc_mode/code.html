@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async function() {
   }
 
   // トークンの取得
-  let res = await fetch("/oidc_mode_token", {
+  let res = await fetch("/api/oidc_mode/token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -44,10 +44,10 @@ document.addEventListener("DOMContentLoaded", async function() {
   }
 
   // トークンを保存
-  localStorage.setItem("idinfo", JSON.stringify(data.idinfo))
+  localStorage.setItem("oidc_mode_idinfo", JSON.stringify(data.idinfo))
   localStorage.setItem("token_response", JSON.stringify(data.token_response))
 
-  location.href = "/oidc_mode"
+  location.href = "/oidc_mode/"
 })
 </script>
 </body>

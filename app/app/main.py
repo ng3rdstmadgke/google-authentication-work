@@ -9,12 +9,14 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import requests as tmp_requests
 
 def random_string() -> str:
     return hashlib.sha256(os.urandom(1024)).hexdigest()
 
 class Environment(BaseSettings):
     client_id: str = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
+    client_secret: str = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 env = Environment()
 
@@ -33,21 +35,24 @@ async def index(request: Request):
 #
 # リダイレクト
 #
-@app.get("/redirect_mode", response_class=HTMLResponse)
+@app.get("/redirect_mode/", response_class=HTMLResponse)
 async def redirect_mode(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="redirect_mode.html",
+        name="redirect_mode/index.html",
         context={
             "client_id": env.client_id,
         }
     )
 
-@app.post("/redirect_mode_verify", response_class=HTMLResponse)
+@app.post("/redirect_mode/verify", response_class=HTMLResponse)
 def redirect_mode_verify(
     request: Request,
+    # パラメータ: https://developers.google.com/identity/gsi/web/reference/html-reference?authuser=1&hl=ja#server-side
     credential: str = Form(...),
     g_csrf_token: str = Form(...),
+    select_by: Optional[str] = Form(None),
+    state: Optional[str] = Form(None),
 ):
     csrf_token_cookie = request.cookies.get("g_csrf_token")
     if not csrf_token_cookie:
@@ -61,9 +66,14 @@ def redirect_mode_verify(
 
     return templates.TemplateResponse(
         request=request,
-        name="redirect_mode_verify.html",
+        name="redirect_mode/verify.html",
         context={
-            "id_token": credential,
+            "redirect_form_data": json.dumps({
+                "credential": credential,
+                "g_csrf_token": g_csrf_token,
+                "select_by": select_by,
+                "state": state,
+            }, ensure_ascii=False),
             "idinfo": json.dumps(idinfo, ensure_ascii=False),
         }
     )
@@ -71,23 +81,23 @@ def redirect_mode_verify(
 #
 # コールバック
 #
-@app.get("/callback_mode", response_class=HTMLResponse)
+@app.get("/callback_mode/", response_class=HTMLResponse)
 async def callback_mode(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="callback_mode.html",
+        name="callback_mode/index.html",
         context={
             "client_id": env.client_id,
         }
     )
 
-class SigninRequest(BaseModel):
+class CallBackVerifyRequest(BaseModel):
     credential: str
     nonce: str
 
-@app.post("/callback_mode_verify")
+@app.post("/api/callback_mode/verify")
 def callback_mode_verify(
-    data: SigninRequest,
+    data: CallBackVerifyRequest,
 ):
     idinfo = id_token.verify_oauth2_token(data.credential, requests.Request(), env.client_id)
     if idinfo['aud'] not in [env.client_id]:
@@ -100,27 +110,23 @@ def callback_mode_verify(
 #
 # OIDC
 #
-@app.get("/oidc_mode", response_class=HTMLResponse)
+@app.get("/oidc_mode/", response_class=HTMLResponse)
 def oidc_mode(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="oidc_mode.html",
+        name="oidc_mode/index.html",
         context={
             "client_id": env.client_id,
         }
     )
 
-@app.get("/oidc_mode_code", response_class=HTMLResponse)
+@app.get("/oidc_mode/code", response_class=HTMLResponse)
 def oidc_mode_code(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="oidc_mode_code.html",
-        context={
-            "client_id": env.client_id,
-        }
+        name="oidc_mode/code.html",
+        context={}
     )
-
-import requests as tmp_requests
 
 class OidcModeTokenRequest(BaseModel):
     code: str
@@ -134,7 +140,7 @@ class GoogleOidcTokenResponse(BaseModel):
     token_type: str
     refresh_token: Optional[str] = None  # 認証リクエストで access_type パラメータが offline に設定されている場合にのみ
 
-@app.post("/oidc_mode_token")
+@app.post("/api/oidc_mode/token")
 def oidc_mode_token(
     data: OidcModeTokenRequest,
 ):
@@ -149,8 +155,8 @@ def oidc_mode_token(
         params={
             "code": data.code,
             "client_id": env.client_id,
-            "client_secret": "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",
-            "redirect_uri": "http://localhost:8000/oidc_mode_code",
+            "client_secret": env.client_secret,
+            "redirect_uri": "http://localhost:8000/oidc_mode/code",
             "grant_type": "authorization_code",
         }
     )

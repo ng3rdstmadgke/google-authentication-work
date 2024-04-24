@@ -40,11 +40,19 @@
 
     <!-- トークン表示領域 -->
     <div id="result">
-      <div>
-        <textarea readonly cols="100" rows=10 id="id_token"></textarea>
+      <div style="margin-bottom: 1rem;">
+        <table id="token_response" border="1">
+          <caption>トークンエンドポイントのレスポンス</caption>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+        </table>
       </div>
-      <div>
-        <table id="payload" border="1">
+
+      <div style="margin-bottom: 1rem;">
+        <table id="callback_mode_idinfo" border="1">
+          <caption>IDトークンのペイロード</caption>
           <tr>
             <th>Key</th>
             <th>Value</th>
@@ -54,6 +62,7 @@
     </div>
 
   </div>
+
 <script>
 const STATE = "abcdefghij1234567890"
 const NONCE = "0987654321zyxwvutsrqponml"
@@ -69,7 +78,7 @@ async function handleCredentialResponse(response) {
     alert('state not match');
     throw new Error('state not match');
   }
-  let res = await fetch("/callback_mode_verify", {
+  let res = await fetch("/api/callback_mode/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -83,8 +92,8 @@ async function handleCredentialResponse(response) {
     alert(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
     throw new Error(`${res.status} ${res.statusText}: verify failed. ${data.detail}`);
   }
-  localStorage.setItem("id_token", response.credential)
-  localStorage.setItem("idinfo", JSON.stringify(data))
+  localStorage.setItem("token_response", JSON.stringify(response))
+  localStorage.setItem("callback_mode_idinfo", JSON.stringify(data))
   displayIdToken()
 }
 
@@ -92,7 +101,7 @@ async function handleCredentialResponse(response) {
  * トークンを削除する
  */
 function revokeIdToken() {
-  let idinfo = JSON.parse(localStorage.getItem("idinfo"))
+  let idinfo = JSON.parse(localStorage.getItem("callback_mode_idinfo"))
   if (idinfo) {
     google.accounts.id.revoke(idinfo.sub, done => {
       localStorage.clear();
@@ -102,24 +111,27 @@ function revokeIdToken() {
 }
 
 /**
-  * トークンを表示する
-  */
+ * トークンを表示する
+ */
 function displayIdToken() {
-  let id_token = localStorage.getItem("id_token")
-  if (id_token) {
-    document.getElementById("id_token").textContent = id_token
-  }
-
-  let idinfo = JSON.parse(localStorage.getItem("idinfo"))
-  if (idinfo) {
-    let table = document.getElementById("payload")
-    Object.entries(idinfo).forEach(([k, v]) => {
-      table.insertAdjacentHTML("beforeend", `<tr><td>${k}</td><td>${v}</td></tr>`)
-    })
+  for (let key of ["token_response", "callback_mode_idinfo"]) {
+    let data = JSON.parse(localStorage.getItem(key))
+    if (data) {
+      let table = document.getElementById(key)
+      Object.entries(data).forEach(([k, v]) => {
+        table.insertAdjacentHTML("beforeend", `<tr><td>${k}</td><td width="600">${v}</td></tr>`)
+      })
+    }
   }
 }
 
 displayIdToken()
 </script>
+
+<style>
+table td {
+  word-break:break-all
+}
+</style>
 </body>
 </html>

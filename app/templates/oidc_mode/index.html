@@ -25,6 +25,12 @@
       </button>
     </div>
 
+    <!-- クリアボタン -->
+    <div style="margin-bottom: 50px;">
+      <button onclick="revokeIdToken()">Clear</button>
+    </div>
+
+
     <!-- トークン表示領域 -->
     <div id="result">
       <div style="margin-bottom: 1rem;">
@@ -38,7 +44,7 @@
       </div>
 
       <div style="margin-bottom: 1rem;">
-        <table id="idinfo" border="1">
+        <table id="oidc_mode_idinfo" border="1">
           <caption>IDトークンのペイロード</caption>
           <tr>
             <th>Key</th>
@@ -48,12 +54,6 @@
       </div>
     </div>
   </div>
-<style>
-
-table td {
-  word-break:break-all
-}
-</style>
 
 <script>
 
@@ -70,7 +70,7 @@ document.getElementById("login_btn").addEventListener("click", function() {
     "response_type": "code",
     "client_id": "{{ client_id }}",
     "scope": "openid email profile",
-    "redirect_uri": "http://localhost:8000/oidc_mode_code",
+    "redirect_uri": "http://localhost:8000/oidc_mode/code",
     "state": state,
     "nonce": nonce,
   }
@@ -79,12 +79,20 @@ document.getElementById("login_btn").addEventListener("click", function() {
   location.href = `${url}?${query_str}`
 })
 
+/**
+ * トークンを削除する
+ */
+function revokeIdToken() {
+  localStorage.clear();
+  location.reload();
+}
+
 
 /**
  * トークンを表示する
  */
 function displayIdToken() {
-  for (let key of ["token_response", "idinfo"]) {
+  for (let key of ["token_response", "oidc_mode_idinfo"]) {
     let data = JSON.parse(localStorage.getItem(key))
     if (data) {
       let table = document.getElementById(key)
@@ -97,5 +105,11 @@ function displayIdToken() {
 
 displayIdToken()
 </script>
+
+<style>
+table td {
+  word-break:break-all
+}
+</style>
 </body>
 </html>

@@ -7,11 +7,11 @@
 </head>
 <body>
 <script>
-let id_token = '{{ id_token }}'
+let redirect_form_data = '{{ redirect_form_data|safe }}'
 let idinfo = '{{ idinfo|safe }}'
-localStorage.setItem("id_token", id_token)
-localStorage.setItem("idinfo", idinfo)
-location.href = "http://localhost:8000/redirect_mode"
+localStorage.setItem("redirect_form_data", redirect_form_data)
+localStorage.setItem("redirect_mode_idinfo", idinfo)
+location.href = "/redirect_mode/"
 </script>
 </body>
 </html>
