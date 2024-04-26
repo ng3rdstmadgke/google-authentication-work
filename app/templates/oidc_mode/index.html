@@ -58,6 +58,7 @@
 <script>
 window.onload = function () {
   // NOTE: google.accounts.id.revokeはinitialize後に呼び出す必要がある
+  // https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.initialize
   google.accounts.id.initialize({
     client_id: '{{ client_id }}',
   });
@@ -91,6 +92,7 @@ document.getElementById("login_btn").addEventListener("click", function() {
 function revokeIdToken() {
   let idinfo = JSON.parse(localStorage.getItem("oidc_mode_idinfo"))
   if (idinfo) {
+    // https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.revoke
     google.accounts.id.revoke(idinfo.sub, done => {
       localStorage.clear();
       location.reload();
