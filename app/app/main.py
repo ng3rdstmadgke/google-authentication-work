@@ -15,8 +15,8 @@ def random_string() -> str:
     return hashlib.sha256(os.urandom(1024)).hexdigest()
 
 class Environment(BaseSettings):
-    client_id: str = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
-    client_secret: str = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    client_id: str
+    client_secret: str
 
 env = Environment()
 
