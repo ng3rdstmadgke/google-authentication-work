@@ -4,8 +4,10 @@
 # poetry インストール
 pip install poetry
 
-# 依存ライブラリインストール
-(cd app; poetry install)
-
-
+# アプリ起動
+./bin/run.sh
 ```
+
+
+ブラウザでアクセス
+http://localhost:8000/
