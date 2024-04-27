@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", async function() {
   console.log("query: ", query)
 
   // stateの検証
+  // - Google Identity - OpenID Connect - 3. 偽造防止状態トークンを確認する
+  // https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#confirmxsrftoken
   if (query.state !== state) {
     alert('state not match');
     throw new Error('state not match');

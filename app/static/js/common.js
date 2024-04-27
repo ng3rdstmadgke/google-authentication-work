@@ -6,7 +6,8 @@ class CommonUtils {
   static revokeIdToken(key) {
     let idinfo = JSON.parse(localStorage.getItem(key))
     if (idinfo) {
-      // https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.revoke
+      // - Google Identity - ウェブでGoogleでログイン - JavaScript API - メソッド: google.accounts.id.revoke
+      //   https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.revoke
       google.accounts.id.revoke(idinfo.sub, done => {
         localStorage.clear();
         location.reload();

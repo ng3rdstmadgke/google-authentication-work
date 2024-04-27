@@ -10,7 +10,8 @@
 <body>
   <!--
     参考
-    - https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja
+    - Google Identity - OpenID Connect
+      https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja
   -->
 
   <div style="padding: 50px;">
@@ -59,20 +60,23 @@
 <script>
 window.onload = function () {
   // NOTE: google.accounts.id.revokeはinitialize後に呼び出す必要がある
-  // https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.initialize
+  // - Google Identity - ウェブでGoogleでログイン - JavaScript API - メソッド:google.accounts.id.initialize
+  //   https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.initialize
   google.accounts.id.initialize({
     client_id: '{{ client_id }}',
   });
 }
 
 document.getElementById("login_btn").addEventListener("click", function() {
+  // - Google Identity - OpenID Connect - 1. 偽造防止状態トークンを作成する
+  //   https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#createxsrftoken
   let state = "abcdefghij1234567890"
   let nonce = "0987654321zyxwvutsrqponml"
   localStorage.setItem("state", state)
   localStorage.setItem("nonce", nonce)
 
-  // 認証URIパラメータ
-  // https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#authenticationuriparameters
+  // - Google Identity - OpenID Connect -  2. Google に認証リクエストを送信する
+  //   https://developers.google.com/identity/openid-connect/openid-connect?authuser=1&hl=ja#sendauthrequest
   let url = "https://accounts.google.com/o/oauth2/v2/auth"
   let query = {
     "response_type": "code",
