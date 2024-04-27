@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import FastAPI, Cookie, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from google.oauth2 import id_token
@@ -20,9 +21,8 @@ class Environment(BaseSettings):
 
 env = Environment()
 
-
 app = FastAPI()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -171,3 +171,6 @@ def oidc_mode_token(
         "token_response": token_response,
         "idinfo": idinfo,
     }
+
+# 静的ファイル
+app.mount("/static", StaticFiles(directory=f"static/", html=True), name="front")

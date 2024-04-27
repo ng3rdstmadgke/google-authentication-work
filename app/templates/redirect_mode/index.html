@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redirect Mode</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="/static/js/common.js"></script>
 </head>
 <body>
   <div style="padding: 50px;">
@@ -35,7 +36,7 @@
 
     <!-- クリアボタン -->
     <div style="margin-bottom: 50px;">
-      <button onclick="revokeIdToken()">Clear</button>
+      <button onclick="CommonUtils.revokeIdToken('redirect_mode_idinfo')">Clear</button>
     </div>
 
     <!-- トークン表示領域 -->
@@ -63,36 +64,7 @@
   </div>
 
 <script>
-/**
- * トークンを削除する
- */
-function revokeIdToken() {
-  let idinfo = JSON.parse(localStorage.getItem("redirect_mode_idinfo"))
-  if (idinfo) {
-    // https://developers.google.com/identity/gsi/web/reference/js-reference?hl=ja&authuser=1#google.accounts.id.revoke
-    google.accounts.id.revoke(idinfo.sub, done => {
-      localStorage.clear();
-      location.reload();
-    });
-  }
-}
-
-/**
-  * トークンを表示する
-  */
-function displayIdToken() {
-  for (let key of ["redirect_form_data", "redirect_mode_idinfo"]) {
-    let data = JSON.parse(localStorage.getItem(key))
-    if (data) {
-      let table = document.getElementById(key)
-      Object.entries(data).forEach(([k, v]) => {
-        table.insertAdjacentHTML("beforeend", `<tr><td>${k}</td><td width="600">${v}</td></tr>`)
-      })
-    }
-  }
-}
-
-displayIdToken()
+CommonUtils.displayIdToken(["redirect_form_data", "redirect_mode_idinfo"])
 </script>
 
 <style>
